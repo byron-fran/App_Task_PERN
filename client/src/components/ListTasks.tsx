@@ -1,37 +1,18 @@
-import React from 'react'
-import axios from 'axios';
+import { ListTask } from '../interfaces/ListTask';
 import Task from '../interfaces';
-const ListTasks = ({tasks,task, setTask, update,setTasks}) => {
-    const deleleTask = async (id : number) => {
-        try{
-            await axios.delete(`http://localhost:3001/task/${id}`);
-            const {data} = await axios('http://localhost:3001/tasks');
-            setTasks(data)
-            console.log('delete success');
-            return data
-        }
-        catch(error){
-            console.log(error)
-        }
-       
-    }
-     const handleDelete = async (id : number) => {
-        await deleleTask(id)
-    };
-    const getTask = async(id: number) => {
-        try{
-            const {data} = await axios(`http://localhost:3001/task/${id}`);
-            setTask(data[0])
-            return data
-        }
-        catch(error){
-            console.log(error);
-            
-        }
-    }
-    const handleUpdate = async  (id : number) => {
-        await getTask(id);
+import useDeleteTask from '../hooks/useDeleteTask';
 
+const ListTasks : React.FC<ListTask> = ({tasks, setTask, setRefreshData ,setIsUpdate}) => {
+
+    const {deleteTask} = useDeleteTask(setRefreshData);
+
+     const handleDelete = async (id : any) => {
+        await deleteTask(id)
+    };
+
+    const handleUpdate =  (task : Task) => {
+       setTask(task);
+ 
     }
   return (
     <div>
@@ -43,10 +24,10 @@ const ListTasks = ({tasks,task, setTask, update,setTasks}) => {
                 <div className='grid grid-cols-2 gap-2'>
                     <button className='bg-red-500' onClick={() => handleDelete(task.id)}>Delete</button>
                     <button className='bg-indigo-600' onClick={() => {
-                        handleUpdate(task.id)
-                        update(task.id)}}>Update</button>
+                        setIsUpdate(true)
+                        handleUpdate(task)}}>Update</button>
                 </div>
-            </div>
+            </div> 
         ))}
     </div>
   )

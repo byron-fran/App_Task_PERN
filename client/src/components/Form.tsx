@@ -1,18 +1,11 @@
-import axios from 'axios';
-import { useState } from 'react';
-import Task from '../interfaces';
 
+import { FormProps } from '../interfaces/Form';
 
-const Form = ({task, setTask, taskFound,handleAdd,errors, setErrors,isUpdate}) => {
+const Form : React.FC<FormProps> = ({ handleSubmit,task, setTask,errors,isUpdate})  => {
 
-
-
-    const handleSubmit = async (e) => {
-
-    }
   return (
     <div>
-        <form onSubmit={handleAdd} method='post' >
+        <form onSubmit={ handleSubmit} method='post' >
             <div>
                 {errors && (<p>{errors.name}</p>)}
                 <label htmlFor="nombre" className='block'>Task Name</label>

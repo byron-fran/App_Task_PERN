@@ -1,100 +1,61 @@
 import { useState, useEffect } from 'react'
 import axios from 'axios'
 import Form from './components/Form'
-import ListTasks from './components/ListTasks'
+import ListTasks from './components/ListTasks';
+import useCreateOrUpdate from './hooks/useCreateOrUpdate';
+import useHandlerSumbit from './hooks/useHandlerSumbit';
+import { ErorrMessage } from './interfaces/Errors';
 import Task from './interfaces'
 function App() {
-  const [task, setTask] = useState({
-    name : '',
-    description : '',
-    done : false
-});
-const [isUpdate, setIsUpdate] = useState(false)
-const [errors, setErrors] = useState({
-  name : '',
-  description : ''
-});
 
-const postTask = async (task : Task) => {
-  try{
-      await axios.post('http://localhost:3001/task', task);
-      const {data} = await axios('http://localhost:3001/tasks');
-      setTasks(data)
-      console.log('send success')
-      return data
-  }
-  catch(error){
-      console.log(error)
-  }
-  
-}
-const [ taskFound, setTaskFound] = useState()
-   const [tasks, setTasks] = useState([])
-  const getTasks = async () => {
-    const {data} = await axios('http://localhost:3001/tasks');
-    setTasks(data)
+  const [isUpdate, setIsUpdate] = useState(false);
+  const [refreshData, setRefreshData] = useState(false)
+  const [tasks, setTasks] = useState([]);
+  const [task, setTask] = useState <Task> ({
+    name: '',
+    description: '',
+    done: false,
+    id: ''
+  });
+  const [errors, setErrors] = useState <ErorrMessage> ({
+    name: '',
+    description: ''
+  });
+  const { updateTask, postTask, } = useCreateOrUpdate(task, setRefreshData, setTask)
+  const { handleSubmit } = useHandlerSumbit(task, setErrors, postTask, updateTask, errors, setIsUpdate, setTask, tasks);
 
-  };
+
   useEffect(() => {
-    getTasks();
-  },[])
-  const updateTask = async (id : number) => {
-    try{
-      await axios.put(`http://localhost:3001/task/${id}`, task);
-      const {data} = await axios('http://localhost:3001/tasks');
+    const getTasks = async () => {
+
+      const { data } = await axios('http://localhost:3001/tasks');
+      //console.log(data)
       setTasks(data)
-      console.log('update success')
-      return 
-    }
-    catch(error){
-      console.log(error)
-    }
-  }
-  const handleAdd = async (e) => {
-    setIsUpdate(false)
-    e.preventDefault();
-    if(task.name === '' &&task.description === ''){
-        setErrors({
-            ...errors,
-            name : 'name must no have empty',
-            description : 'description must no have empty'
-        })
-        return
-    }
-    setErrors({
-        ...errors,
-        name : '',
-        description : ''
-    });
-    setTask({
-        ...task,
-        name : '',
-        description : ''
-    });
-    if(taskFound){
-       
-        await updateTask(taskFound.id, task);
-       
-        return
-    }
-    postTask(task);
-   
-  }
- const update = ( id : number)=> {
-  const tasFound = tasks.find( task => task.id === id);
-  
-  if(tasFound){
-    setTaskFound(tasFound);
-    setIsUpdate(true)
-    return
-  }
-  setIsUpdate(false)
- }
+
+    };
+    getTasks();
+  }, [refreshData]);
+
 
   return (
     <div className='bg-gray-800 p-10 text-white' >
-      <Form task={task} setTask={setTask}  taskFound={taskFound} handleAdd={ handleAdd} errors={errors} setErrors={setErrors} isUpdate={isUpdate}/>
-      <ListTasks tasks={tasks} task={task} setTask={setTask}  update={update}setTasks={setTasks}/>
+      <Form
+        task={task}
+        setTask={setTask}
+
+        handleSubmit={handleSubmit}
+        errors={errors}
+        setErrors={setErrors}
+        isUpdate={isUpdate}
+
+      />
+      <ListTasks
+        task={task}
+        tasks={tasks}
+        setTask={setTask}
+        setTasks={setTasks}
+        setRefreshData={setRefreshData}
+        setIsUpdate={setIsUpdate} />
     </div>
   )
 }
